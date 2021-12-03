@@ -29,6 +29,37 @@ function read(req, res, next) {
   res.json({ data: res.locals.dish });
 }
 
+////////////
+// UPDATE //
+////////////
+
+function update(req, res, next) {
+  const dish = res.locals.dish;
+  const originalName = dish.name;
+  const originalDescription = dish.description;
+  const originalPrice = dish.price;
+  const originalImageUrl = dish.image_url;
+  const { data: { id, name, description, price, image_url } = {} } = req.body;
+
+  if (originalName !== name) {
+    dish.name = name;
+  }
+
+  if (originalDescription !== description) {
+    dish.description = description;
+  }
+
+  if (originalPrice !== price) {
+    dish.price = price;
+  }
+
+  if (originalImageUrl !== image_url) {
+    dish.image_url = image_url;
+  }
+
+  res.json({ data: dish });
+}
+
 //////////
 // LIST //
 //////////
@@ -54,7 +85,7 @@ function dishExists(req, res, next) {
 
   next({
     status: 404,
-    message: `That dish does not exist! Dish id not found: ${dishId}`,
+    message: `Dish does not exist: ${dishId}`,
   });
 }
 
@@ -97,8 +128,32 @@ function bodyPropertiesAreEmpty(req, res, next) {
   next();
 }
 
+function doesUpdatedIdMatch(req, res, next) {
+  // will check if the id property for the put method matches the already existing dish id.
+  const originalDish = res.locals.dish;
+  const originalId = originalDish.id;
+  const { dishId } = req.params;
+  const { data: { id, name, description, price, image_url } = {} } = req.body;
+
+  if (id != originalId) {
+    return next({
+      status: 400,
+      message: `Dish id does not match Route id. Dish: ${id}, Route: ${dishId}`,
+    });
+  }
+
+  next();
+}
+
 module.exports = {
   create: [allBodyPropertiesExist, bodyPropertiesAreEmpty, create],
   read: [dishExists, read],
+  update: [
+    dishExists,
+    doesUpdatedIdMatch,
+    allBodyPropertiesExist,
+    bodyPropertiesAreEmpty,
+    update,
+  ],
   list,
 };
