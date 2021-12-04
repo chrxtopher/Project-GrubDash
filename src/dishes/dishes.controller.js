@@ -90,7 +90,7 @@ function dishExists(req, res, next) {
 }
 
 function allBodyPropertiesExist(req, res, next) {
-  // this function will check if all body props exist for post & put methods.
+  // this function will check if all body props exist for post, put, & delete methods.
   // if one or more do not, it will return an error status and message.
   const { data: { name, description, price, image_url } = {} } = req.body;
 
