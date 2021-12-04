@@ -1,7 +1,5 @@
 const path = require("path");
 const orders = require(path.resolve("src/data/orders-data"));
-
-// Use this function to assigh ID's when necessary
 const nextId = require("../utils/nextId");
 
 ////////////
@@ -22,6 +20,14 @@ function create(req, res, next) {
 }
 
 //////////
+// READ //
+//////////
+
+function read(req, res, next) {
+  res.json({ data: res.locals.order });
+}
+
+//////////
 // LIST //
 //////////
 
@@ -32,6 +38,21 @@ function list(req, res, next) {
 /////////////////////////////////
 // VALIDATION MIDDLEWARE BELOW //
 /////////////////////////////////
+
+function orderExists(req, res, next) {
+  const { orderId } = req.params;
+  const foundOrder = orders.find((order) => order.id === orderId);
+
+  if (foundOrder) {
+    res.locals.order = foundOrder;
+    return next();
+  }
+
+  next({
+    status: 404,
+    message: `Order ${orderId} not found.`,
+  });
+}
 
 function bodyHasAllProperties(req, res, next) {
   // this function will check if all body props exist for post, put, & delete methods.
@@ -111,5 +132,6 @@ module.exports = {
     checkQuantity,
     create,
   ],
+  read: [orderExists, read],
   list,
 };
