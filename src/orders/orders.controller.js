@@ -62,7 +62,7 @@ function bodyHasAllProperties(req, res, next) {
     return next({
       status: 400,
       message:
-        "All body properties are required! (ie: deliverTo, mobileNumber, status, dishes",
+        "order must include deliverTo, mobileNumber, status, and dishes.",
     });
   }
 
@@ -87,27 +87,31 @@ function bodyPropertiesAreEmpty(req, res, next) {
   next();
 }
 
-function checkDataTypes(req, res, next) {
-  // this function will make sure that quantity is an integer and dishes is an array.
+function checkQuantityDataType(req, res, next) {
+  // this function will make sure that each dish's quantity value is an integer.
+  // if not, will return an error status and message.
+  const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
+  const index = dishes.findIndex((dish) => !Number.isInteger(dish.quantity));
+
+  index
+    ? next({
+        status: 400,
+        message: `dish ${index} must have a quantity that is an integer greater than 0`,
+      })
+    : next();
+}
+
+function checkDishesDataTypes(req, res, next) {
+  // this function will check if dishes is an array.
   // if not, will return with an error status and message.
   const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
-  const error = {
-    status: 400,
-    message:
-      "Dishes must be an array. Quantity must be an integer greater than zero.",
-  };
-  if (Array.isArray(dishes)) {
-    const quantNotAllowed = dishes.find(
-      (dish) => !Number.isInteger(dish.quantity)
-    );
-    if (quantNotAllowed) {
-      return next(error);
-    }
-  } else {
-    return next(error);
-  }
 
-  next();
+  !Array.isArray(dishes)
+    ? next({
+        status: 400,
+        message: "dishes must be an array.",
+      })
+    : next();
 }
 
 function checkQuantity(req, res, next) {
@@ -119,7 +123,7 @@ function checkQuantity(req, res, next) {
   quantNotAllowed
     ? next({
         status: 400,
-        message: "Quantity must be an integer greater than zero!",
+        message: "quantity must be an integer greater than 0.",
       })
     : next();
 }
@@ -127,7 +131,8 @@ function checkQuantity(req, res, next) {
 module.exports = {
   create: [
     bodyHasAllProperties,
-    checkDataTypes,
+    checkDishesDataTypes,
+    checkQuantityDataType,
     bodyPropertiesAreEmpty,
     checkQuantity,
     create,

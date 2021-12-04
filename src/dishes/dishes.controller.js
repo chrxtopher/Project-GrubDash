@@ -119,7 +119,7 @@ function bodyPropertiesAreEmpty(req, res, next) {
     return next({
       status: 400,
       message:
-        "Name, description, and image_url properties cannot be empty. Price property must be an integer that is not zero or less.",
+        "Name, description, and image_url properties cannot be empty; price property must be an integer greater than zero.",
     });
   }
 
