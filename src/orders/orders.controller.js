@@ -27,6 +27,38 @@ function read(req, res, next) {
   res.json({ data: res.locals.order });
 }
 
+////////////
+// UPDATE //
+////////////
+
+function update(req, res, next) {
+  const order = res.locals.order;
+  const { data: { id, deliverTo, mobileNumber, status, dishes } = {} } =
+    req.body;
+
+  if (order.id !== id) {
+    order.id = id;
+  }
+
+  if (order.deliverTo !== deliverTo) {
+    order.deliverTo = deliverTo;
+  }
+
+  if (order.mobileNumber !== mobileNumber) {
+    order.mobileNumber = mobileNumber;
+  }
+
+  if (order.status !== status) {
+    order.status = status;
+  }
+
+  if (order.dishes !== dishes) {
+    order.dishes = dishes;
+  }
+
+  res.json({ data: order });
+}
+
 //////////
 // LIST //
 //////////
@@ -138,5 +170,14 @@ module.exports = {
     create,
   ],
   read: [orderExists, read],
+  update: [
+    orderExists,
+    bodyHasAllProperties,
+    checkDishesDataTypes,
+    checkQuantityDataType,
+    bodyPropertiesAreEmpty,
+    checkQuantity,
+    update,
+  ],
   list,
 };

@@ -33,25 +33,25 @@ function read(req, res, next) {
 
 function update(req, res, next) {
   const dish = res.locals.dish;
-  const originalName = dish.name;
-  const originalDescription = dish.description;
-  const originalPrice = dish.price;
-  const originalImageUrl = dish.image_url;
   const { data: { id, name, description, price, image_url } = {} } = req.body;
 
-  if (originalName !== name) {
+  if (dish.id !== id) {
+    dish.id = id;
+  }
+
+  if (dish.name !== name) {
     dish.name = name;
   }
 
-  if (originalDescription !== description) {
+  if (dish.description !== description) {
     dish.description = description;
   }
 
-  if (originalPrice !== price) {
+  if (dish.price !== price) {
     dish.price = price;
   }
 
-  if (originalImageUrl !== image_url) {
+  if (dish.image_url !== image_url) {
     dish.image_url = image_url;
   }
 
@@ -114,6 +114,7 @@ function bodyPropertiesAreEmpty(req, res, next) {
     description.length === 0 ||
     price <= 0 ||
     !Number.isInteger(price) ||
+    isNaN(price) ||
     image_url.length === 0
   ) {
     return next({
