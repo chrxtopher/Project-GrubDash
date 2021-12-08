@@ -59,6 +59,14 @@ function update(req, res, next) {
   res.json({ data: order });
 }
 
+////////////
+// DELETE //
+////////////
+
+function destroy(req, res, next) {
+  ///
+}
+
 //////////
 // LIST //
 //////////
@@ -84,6 +92,20 @@ function orderExists(req, res, next) {
     status: 404,
     message: `Order ${orderId} not found.`,
   });
+}
+
+function checkOrderStatus(req, res, next) {
+  // this function will check if the status of the order to be deleted is "pending".
+  // if not, will return an error status and message.
+  const order = res.locals.order;
+  if (order.status !== "pending") {
+    return next({
+      status: 400,
+      message: "An order cannot be deleted unless it is pending.",
+    });
+  }
+
+  next();
 }
 
 function bodyHasAllProperties(req, res, next) {
@@ -179,5 +201,6 @@ module.exports = {
     checkQuantity,
     update,
   ],
+  delete: [orderExists, checkOrderStatus, destroy],
   list,
 };
