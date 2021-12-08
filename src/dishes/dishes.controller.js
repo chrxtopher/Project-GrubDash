@@ -66,7 +66,7 @@ function destroy(req, res, next) {
   const { dishId } = req.params;
   const index = dishes.findIndex((dish) => dish.id === dishId);
 
-  dish.splice(index, 1);
+  dishes.splice(index, 1);
   res.sendStatus(204);
 }
 
