@@ -68,6 +68,7 @@ function list(req, res, next) {
 /////////////////////////////////
 
 function orderExists(req, res, next) {
+  // will check if an order exists.
   const { orderId } = req.params;
   const foundOrder = orders.find((order) => order.id === orderId);
 
@@ -83,7 +84,7 @@ function orderExists(req, res, next) {
 }
 
 function checkOrderStatus(req, res, next) {
-  // this function will check if the status of the order to be deleted is "pending".
+  // will check if the status of the order to be deleted is "pending".
   // if not, will return an error status and message.
   const order = res.locals.order;
   if (order.status !== "pending") {
@@ -97,8 +98,8 @@ function checkOrderStatus(req, res, next) {
 }
 
 function bodyHasAllProperties(req, res, next) {
-  // will check if all required body props exist.
-  // if one or more do not, it will return an error status and message.
+  // will check if all required body properties exist.
+  // if one or more do not, will return an error status and message.
   const { data: { deliverTo, mobileNumber, dishes } = {} } = req.body;
 
   if (deliverTo && mobileNumber && dishes) {
@@ -112,7 +113,7 @@ function bodyHasAllProperties(req, res, next) {
 }
 
 function bodyPropertiesAreEmpty(req, res, next) {
-  // this function will check if deliverTo, mobileNumber, or dishes properties are empty.
+  // will check if deliverTo, mobileNumber, or dishes properties are empty.
   // if so, will return with an error status and message.
   const { data: { deliverTo, mobileNumber, dishes } = {} } = req.body;
   if (deliverTo === "" || mobileNumber === "" || dishes.length === 0) {
@@ -126,7 +127,7 @@ function bodyPropertiesAreEmpty(req, res, next) {
 }
 
 function checkQuantityDataType(req, res, next) {
-  // this function will make sure that each dish's quantity value is an integer.
+  // will make sure that each dish's quantity value is an integer.
   // if not, will return an error status and message.
   const { data: { dishes } = {} } = req.body;
   const index = dishes.findIndex((dish) => !Number.isInteger(dish.quantity));
@@ -140,8 +141,8 @@ function checkQuantityDataType(req, res, next) {
 }
 
 function checkDishesDataType(req, res, next) {
-  // this function will check if dishes is an array.
-  // if not, will return with an error status and message.
+  // will check if dishes is an array.
+  // if not, will return an error status and message.
   const { data: { dishes } = {} } = req.body;
 
   !Array.isArray(dishes)
@@ -154,7 +155,7 @@ function checkDishesDataType(req, res, next) {
 
 function checkQuantity(req, res, next) {
   // this function will make sure the quantity of a dish is not equal to or less than zero.
-  // if so, will return with an error status and message.
+  // if so, will return an error status and message.
   const { data: { dishes } = {} } = req.body;
   const quantNotAllowed = dishes.find((dish) => dish.quantity <= 0);
 
@@ -167,7 +168,8 @@ function checkQuantity(req, res, next) {
 }
 
 function doesUpdatedIdMatch(req, res, next) {
-  // will check if the id property for the put method matches the already existing order id.
+  // will check if the id property for the put method matches order id if it exists.
+  // if not, will return an error status and message.
   const originalOrder = res.locals.order;
   const { orderId } = req.params;
   const { data: { id } = {} } = req.body;

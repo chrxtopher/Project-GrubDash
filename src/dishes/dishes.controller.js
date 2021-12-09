@@ -57,8 +57,7 @@ function list(req, res) {
 /////////////////////////////////
 
 function dishExists(req, res, next) {
-  // this function will check the list of dishes for a particular dish.
-  // if it does not, will return an error status and message.
+  // will check if a dish exists.
   const { dishId } = req.params;
   const foundDish = dishes.find((dish) => dish.id === dishId);
 
@@ -74,8 +73,8 @@ function dishExists(req, res, next) {
 }
 
 function allBodyPropertiesExist(req, res, next) {
-  // this function will check if all body props exist for post, put, & delete methods.
-  // if one or more do not, it will return an error status and message.
+  // will check if all body props exist for post, put, & delete methods.
+  // if one or more do not, will return an error status and message.
   let { data: { name, description, price, image_url } = {} } = req.body;
 
   if (name && description && price && image_url) {
@@ -90,9 +89,9 @@ function allBodyPropertiesExist(req, res, next) {
 }
 
 function bodyPropertiesAreEmpty(req, res, next) {
-  // this function will check if name, description, or image_url are empty.
-  // will also check if price is zero or less.
-  // if any above are true, will return error status and message.
+  // will check if name, description, or image_url are empty.
+  // will also check if price is zero or less or not an integer.
+  // if any above are true, will return an error status and message.
   const { data: { name, description, price, image_url } = {} } = req.body;
 
   if (
@@ -114,7 +113,8 @@ function bodyPropertiesAreEmpty(req, res, next) {
 }
 
 function doesUpdatedIdMatch(req, res, next) {
-  // will check if the id property for the put method matches the already existing dish id.
+  // will check if the id property for the put method matches the dish id if it exists.
+  // if not, will return an error status and message.
   const originalDish = res.locals.dish;
   const { dishId } = req.params;
   const { data: { id } = {} } = req.body;
