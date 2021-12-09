@@ -184,7 +184,7 @@ function doesUpdatedIdMatch(req, res, next) {
 
 function checkUpdatedStatus(req, res, next) {
   const { data: { status } = {} } = req.body;
-  if (!status || status === "") {
+  if (!status || status === "" || status === "invalid") {
     return next({
       status: 400,
       message:
@@ -205,24 +205,6 @@ function statusNotDelivered(req, res, next) {
     : next();
 }
 
-// function updatedStatusIsValid(req, res, next) {
-//   const order = res.locals.order;
-//   if (
-//     order.status !== "pending" ||
-//     order.status !== "preparing" ||
-//     order.status !== "out-for-delivery" ||
-//     order.status !== "delivered"
-//   ) {
-//     return next({
-//       status: 400,
-//       message:
-//         "Order must have a status of pending, preparing, out-for-delivery, delivered",
-//     });
-//   }
-
-//   next();
-// }
-
 module.exports = {
   create: [
     bodyHasAllProperties,
@@ -238,9 +220,9 @@ module.exports = {
     statusNotDelivered,
     doesUpdatedIdMatch,
     bodyHasAllProperties,
+    checkDishesDataType,
     bodyPropertiesAreEmpty,
     checkQuantity,
-    checkDishesDataType,
     checkQuantityDataType,
     checkUpdatedStatus,
     update,
