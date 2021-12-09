@@ -35,25 +35,11 @@ function update(req, res, next) {
   const dish = res.locals.dish;
   const { data: { id, name, description, price, image_url } = {} } = req.body;
 
-  if (dish.id !== id) {
-    dish.id = id;
-  }
-
-  if (dish.name !== name) {
-    dish.name = name;
-  }
-
-  if (dish.description !== description) {
-    dish.description = description;
-  }
-
-  if (dish.price !== price) {
-    dish.price = price;
-  }
-
-  if (dish.image_url !== image_url) {
-    dish.image_url = image_url;
-  }
+  dish.id = id;
+  dish.name = name;
+  dish.description = description;
+  dish.price = price;
+  dish.image_url = image_url;
 
   res.json({ data: dish });
 }
@@ -105,7 +91,6 @@ function allBodyPropertiesExist(req, res, next) {
   let { data: { name, description, price, image_url } = {} } = req.body;
 
   if (name && description && price && image_url) {
-    id = nextId();
     return next();
   }
 
@@ -146,7 +131,7 @@ function doesUpdatedIdMatch(req, res, next) {
   const { dishId } = req.params;
   const { data: { id } = {} } = req.body;
 
-  if (id && id != originalDish.id) {
+  if (id && id !== originalDish.id) {
     return next({
       status: 400,
       message: `Dish id does not match Route id. Dish: ${id}, Route: ${dishId}`,

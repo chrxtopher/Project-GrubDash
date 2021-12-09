@@ -48,7 +48,11 @@ function update(req, res, next) {
 ////////////
 
 function destroy(req, res, next) {
-  ///
+  const orderToDestroy = res.locals.order;
+  const index = orders.findIndex((order) => order.id === orderToDestroy.id);
+
+  orders.splice(index, 1);
+  res.sendStatus(204);
 }
 
 //////////
@@ -162,6 +166,22 @@ function checkQuantity(req, res, next) {
     : next();
 }
 
+function doesUpdatedIdMatch(req, res, next) {
+  // will check if the id property for the put method matches the already existing order id.
+  const originalOrder = res.locals.order;
+  const { orderId } = req.params;
+  const { data: { id } = {} } = req.body;
+
+  if (id && id !== originalOrder.id) {
+    return next({
+      status: 400,
+      message: `Order id does not match Route id. Dish: ${id}, Route: ${orderId}`,
+    });
+  }
+
+  next();
+}
+
 function checkUpdatedStatus(req, res, next) {
   const { data: { status } = {} } = req.body;
   if (!status || status === "") {
@@ -175,6 +195,34 @@ function checkUpdatedStatus(req, res, next) {
   next();
 }
 
+function statusNotDelivered(req, res, next) {
+  const order = res.locals.order;
+  order.status === "delivered"
+    ? next({
+        status: 400,
+        message: "A delivered order cannot be changed",
+      })
+    : next();
+}
+
+// function updatedStatusIsValid(req, res, next) {
+//   const order = res.locals.order;
+//   if (
+//     order.status !== "pending" ||
+//     order.status !== "preparing" ||
+//     order.status !== "out-for-delivery" ||
+//     order.status !== "delivered"
+//   ) {
+//     return next({
+//       status: 400,
+//       message:
+//         "Order must have a status of pending, preparing, out-for-delivery, delivered",
+//     });
+//   }
+
+//   next();
+// }
+
 module.exports = {
   create: [
     bodyHasAllProperties,
@@ -187,6 +235,8 @@ module.exports = {
   read: [orderExists, read],
   update: [
     orderExists,
+    statusNotDelivered,
+    doesUpdatedIdMatch,
     bodyHasAllProperties,
     bodyPropertiesAreEmpty,
     checkQuantity,
