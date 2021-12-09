@@ -7,12 +7,12 @@ const nextId = require("../utils/nextId");
 ////////////
 
 function create(req, res, next) {
-  const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
+  const { data: { deliverTo, mobileNumber, dishes } = {} } = req.body;
   const newOrder = {
     id: nextId(),
     deliverTo: deliverTo,
     mobileNumber: mobileNumber,
-    status: status,
+    status: "pending",
     dishes: dishes,
   };
   orders.push(newOrder);
@@ -33,28 +33,12 @@ function read(req, res, next) {
 
 function update(req, res, next) {
   const order = res.locals.order;
-  const { data: { id, deliverTo, mobileNumber, status, dishes } = {} } =
-    req.body;
+  const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
 
-  if (order.id !== id) {
-    order.id = id;
-  }
-
-  if (order.deliverTo !== deliverTo) {
-    order.deliverTo = deliverTo;
-  }
-
-  if (order.mobileNumber !== mobileNumber) {
-    order.mobileNumber = mobileNumber;
-  }
-
-  if (order.status !== status) {
-    order.status = status;
-  }
-
-  if (order.dishes !== dishes) {
-    order.dishes = dishes;
-  }
+  order.deliverTo = deliverTo;
+  order.mobileNumber = mobileNumber;
+  order.status = status;
+  order.dishes = dishes;
 
   res.json({ data: order });
 }
@@ -109,29 +93,25 @@ function checkOrderStatus(req, res, next) {
 }
 
 function bodyHasAllProperties(req, res, next) {
-  // this function will check if all body props exist for post, put, & delete methods.
+  // will check if all required body props exist.
   // if one or more do not, it will return an error status and message.
-  const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
-  if (!deliverTo || !mobileNumber || !status || !dishes) {
-    return next({
-      status: 400,
-      message:
-        "order must include deliverTo, mobileNumber, status, and dishes.",
-    });
+  const { data: { deliverTo, mobileNumber, dishes } = {} } = req.body;
+
+  if (deliverTo && mobileNumber && dishes) {
+    return next();
   }
 
-  next();
+  next({
+    status: 400,
+    message: "order must include deliverTo, mobileNumber, and dishes.",
+  });
 }
 
 function bodyPropertiesAreEmpty(req, res, next) {
   // this function will check if deliverTo, mobileNumber, or dishes properties are empty.
   // if so, will return with an error status and message.
-  const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
-  if (
-    deliverTo.length === 0 ||
-    mobileNumber.length === 0 ||
-    dishes.length === 0
-  ) {
+  const { data: { deliverTo, mobileNumber, dishes } = {} } = req.body;
+  if (deliverTo === "" || mobileNumber === "" || dishes.length === 0) {
     return next({
       status: 400,
       message: "deliverTo, mobileNumber, & dishes cannot be empty.",
@@ -144,10 +124,10 @@ function bodyPropertiesAreEmpty(req, res, next) {
 function checkQuantityDataType(req, res, next) {
   // this function will make sure that each dish's quantity value is an integer.
   // if not, will return an error status and message.
-  const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
+  const { data: { dishes } = {} } = req.body;
   const index = dishes.findIndex((dish) => !Number.isInteger(dish.quantity));
 
-  index
+  index !== -1
     ? next({
         status: 400,
         message: `dish ${index} must have a quantity that is an integer greater than 0`,
@@ -155,10 +135,10 @@ function checkQuantityDataType(req, res, next) {
     : next();
 }
 
-function checkDishesDataTypes(req, res, next) {
+function checkDishesDataType(req, res, next) {
   // this function will check if dishes is an array.
   // if not, will return with an error status and message.
-  const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
+  const { data: { dishes } = {} } = req.body;
 
   !Array.isArray(dishes)
     ? next({
@@ -171,7 +151,7 @@ function checkDishesDataTypes(req, res, next) {
 function checkQuantity(req, res, next) {
   // this function will make sure the quantity of a dish is not equal to or less than zero.
   // if so, will return with an error status and message.
-  const { data: { deliverTo, mobileNumber, status, dishes } = {} } = req.body;
+  const { data: { dishes } = {} } = req.body;
   const quantNotAllowed = dishes.find((dish) => dish.quantity <= 0);
 
   quantNotAllowed
@@ -182,12 +162,25 @@ function checkQuantity(req, res, next) {
     : next();
 }
 
+function checkUpdatedStatus(req, res, next) {
+  const { data: { status } = {} } = req.body;
+  if (!status || status === "") {
+    return next({
+      status: 400,
+      message:
+        "Order must have a status of pending, preparing, out-for-delivery, delivered",
+    });
+  }
+
+  next();
+}
+
 module.exports = {
   create: [
     bodyHasAllProperties,
-    checkDishesDataTypes,
-    checkQuantityDataType,
     bodyPropertiesAreEmpty,
+    checkDishesDataType,
+    checkQuantityDataType,
     checkQuantity,
     create,
   ],
@@ -195,10 +188,11 @@ module.exports = {
   update: [
     orderExists,
     bodyHasAllProperties,
-    checkDishesDataTypes,
-    checkQuantityDataType,
     bodyPropertiesAreEmpty,
     checkQuantity,
+    checkDishesDataType,
+    checkQuantityDataType,
+    checkUpdatedStatus,
     update,
   ],
   delete: [orderExists, checkOrderStatus, destroy],
