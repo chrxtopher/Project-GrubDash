@@ -63,8 +63,8 @@ function update(req, res, next) {
 ////////////
 
 function destroy(req, res, next) {
-  const { dishId } = req.params;
-  const index = dishes.findIndex((dish) => dish.id === dishId);
+  const dishToDestroy = res.locals.dish;
+  const index = dishes.findIndex((dish) => dish.id === dishToDestroy.id);
 
   dishes.splice(index, 1);
   res.sendStatus(204);
@@ -102,9 +102,10 @@ function dishExists(req, res, next) {
 function allBodyPropertiesExist(req, res, next) {
   // this function will check if all body props exist for post, put, & delete methods.
   // if one or more do not, it will return an error status and message.
-  const { data: { name, description, price, image_url } = {} } = req.body;
+  let { data: { name, description, price, image_url } = {} } = req.body;
 
   if (name && description && price && image_url) {
+    id = nextId();
     return next();
   }
 
@@ -142,11 +143,10 @@ function bodyPropertiesAreEmpty(req, res, next) {
 function doesUpdatedIdMatch(req, res, next) {
   // will check if the id property for the put method matches the already existing dish id.
   const originalDish = res.locals.dish;
-  const originalId = originalDish.id;
   const { dishId } = req.params;
-  const { data: { id, name, description, price, image_url } = {} } = req.body;
+  const { data: { id } = {} } = req.body;
 
-  if (id != originalId) {
+  if (id && id != originalDish.id) {
     return next({
       status: 400,
       message: `Dish id does not match Route id. Dish: ${id}, Route: ${dishId}`,
